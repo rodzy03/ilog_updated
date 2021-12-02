@@ -17,7 +17,7 @@
         </a>
 
       </li>
-      @if(Auth::user()->role == 'admin')
+      @if(Auth::user()->role == 'admin' && empty(session('client_id')))
       <li class="has-sub {{ (Route::currentRouteName() == 'get_guards') 
             || (Route::currentRouteName() == 'get_supervisor') 
             || (Route::currentRouteName() == 'get_sessions')
@@ -279,7 +279,9 @@
         </ul>
       </li>
       
-
+      
+      @endif
+      @if( !empty(session('client_id')) )
       <li class="has-sub {{ (Route::currentRouteName() == 'view_reports')
              || (Route::currentRouteName() == 'incident_reports')
              || (Route::currentRouteName() == 'emergency_reports')
@@ -340,7 +342,6 @@
         </ul>
       </li>
       @endif
-     
       <!-- begin sidebar minify button -->
       <li><a href="javascript:;" class="sidebar-minify-btn" data-click="sidebar-minify"><i class="fa fa-angle-double-left"></i></a></li>
       <!-- end sidebar minify button -->

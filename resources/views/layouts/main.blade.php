@@ -90,10 +90,10 @@
         <li class="dropdown navbar-user">
           <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
             <img src="{{asset('uploads/security.png')}}" alt="" />
-            <span class="d-none d-md-inline" style="text-transform: capitalize;">{{ Auth::user()->name }}</span> <b class="caret"></b>
+            <span class="d-none d-md-inline" style="text-transform: lowercase;">ipi.sez@yahoo.com</span> <b class="caret"></b>
           </a>
           <div class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item" href="javascript;:" data-toggle="modal" data-target="#modal-edit-p">Edit Profile</a>
+            {{--<a class="dropdown-item" href="javascript;:" data-toggle="modal" data-target="#modal-edit-p">Edit Profile</a>--}}
             
             <div class="dropdown-divider"></div>
             <a href="{{ route('logout') }}" onclick="event.preventDefault();

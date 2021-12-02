@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use DB;
+use Illuminate\Support\Facades\DB;
 use PDF;
 
 class ReportsController extends Controller
 {
+
     public function view_reports()
     {
         $guards = db::table('v_get_schedules')->get();
@@ -32,6 +33,11 @@ class ReportsController extends Controller
         return view('employee.performance_reports',compact('guards'));   
     }
 
+    public function locationName()
+    {
+        return db::table('r_location_information')->where('CLIENT_ID',session('client_id'))->value('RLI_LOCATIONAME');
+    }
+
     public function print_emergency(Request $request)
     {
         ini_set('memory_limit', '512M');
@@ -43,7 +49,10 @@ class ReportsController extends Controller
         $job_role = $request->get('job_role');
 
         if(empty($start) && empty($end)) {
-            $logs = db::table('v_get_emergency')->where('REL_USERID',$guard_id)->get();
+            $logs = db::table('v_get_emergency')->where('REL_USERID',$guard_id)
+            ->where('RLI_LOCATIONAME',$this->locationName())
+            ->whereRaw('DATE(REL_DATEADDED) = CURDATE()')
+            ->get();
         }
         else 
         {
@@ -51,12 +60,14 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_emergency')->where('REL_USERID',$guard_id)
                 ->where(DB::raw('DATE(REL_DATEADDED)'), $start)
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             } 
             else 
             {
                 $logs = db::table('v_get_emergency')->where('REL_USERID',$guard_id)
                 ->whereBetween(DB::raw('DATE(REL_DATEADDED)'), array($start, $end))
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }
@@ -78,7 +89,10 @@ class ReportsController extends Controller
         $job_role = $request->get('job_role');
 
         if(empty($start) && empty($end)) {
-            $logs = db::table('v_get_incidents')->where('RIL_USERID',$guard_id)->get();
+            $logs = db::table('v_get_incidents')->where('RIL_USERID',$guard_id)
+            ->where('RLI_LOCATIONAME',$this->locationName())
+            ->whereRaw('DATE(RIL_DATEADDED) = CURDATE()')
+            ->get();
         }
         else 
         {
@@ -86,12 +100,14 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_incidents')->where('RIL_USERID',$guard_id)
                 ->where(DB::raw('DATE(RIL_DATEADDED)'), $start)
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             } 
             else 
             {
                 $logs = db::table('v_get_incidents')->where('RIL_USERID',$guard_id)
                 ->whereBetween(DB::raw('DATE(RIL_DATEADDED)'), array($start, $end))
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }
@@ -112,29 +128,31 @@ class ReportsController extends Controller
         $guard_id = $request->get('guard_id');
         $name = $request->get('fullname');
         $job_role = $request->get('job_role');
-
-        
         
         if(empty($start) && empty($end)) {
-            $logs = db::table('v_get_logs')->where('TAL_ACCOUNTID',$guard_id)->get();
+            $logs = db::table('v_get_logs')->where('TAL_ACCOUNTID',$guard_id)
+            ->where('RLI_LOCATIONAME',$this->locationName())
+            ->whereRaw('DATE(TAL_DATEADDED) = CURDATE()')
+            ->get();
         }
         else 
         {
+            
             if(!empty($start) && empty($end)) 
             {
                 $logs = db::table('v_get_logs')->where('TAL_ACCOUNTID',$guard_id)
                 ->where(DB::raw('DATE(TAL_DATEADDED)'), $start)
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
-                
             } 
             else 
             {
                 $logs = db::table('v_get_logs')->where('TAL_ACCOUNTID',$guard_id)
                 ->whereBetween('TAL_DATEADDED', array($start, $end))
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }
-
         
         $view = View('logs_printable',compact('logs','name','job_role','start','end'));
         $pdf = \App::make('dompdf.wrapper');
@@ -156,7 +174,10 @@ class ReportsController extends Controller
         
         
         if(empty($start) && empty($end)) {
-            $logs = db::table('v_get_swim_logs')->where('RSL_GUARDID',$guard_id)->get();
+            $logs = db::table('v_get_swim_logs')->where('RSL_GUARDID',$guard_id)
+            ->where('RLI_LOCATIONAME',$this->locationName())
+            ->whereRaw('DATE(RSL_DATEADDED) = CURDATE()')
+            ->get();
         }
         else 
         {
@@ -164,6 +185,7 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_swim_logs')->where('RSL_GUARDID',$guard_id)
                 ->where(DB::raw('DATE(RSL_DATEADDED)'), $start)
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
                 
             } 
@@ -171,6 +193,7 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_swim_logs')->where('RSL_GUARDID',$guard_id)
                 ->whereBetween('RSL_DATEADDED', array($start, $end))
+                ->where('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }

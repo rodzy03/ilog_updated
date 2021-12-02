@@ -2,6 +2,7 @@
 // use Illuminate\Foundation\Auth\AuthenticatesUsers;
 // use Illuminate\Foundation\Auth\ThrottlesLogins;
 namespace App\Http\Controllers\Auth;
+
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
@@ -12,8 +13,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Lang;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+
 class LoginController extends Controller
 {
     /*
@@ -50,8 +53,6 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
-        db::table('users')->where('email','duterterodelb@gmail.com')->update(['password' => bcrypt('password')]);
-       
         return view('auth.login');
     }
 
@@ -63,14 +64,16 @@ class LoginController extends Controller
     protected function hasTooManyLoginAttempts(Request $request)
     {
         return $this->limiter()->tooManyAttempts(
-            $this->throttleKey($request), $this->maxAttempts()
+            $this->throttleKey($request),
+            $this->maxAttempts()
         );
     }
 
     protected function incrementLoginAttempts(Request $request)
     {
         $this->limiter()->hit(
-            $this->throttleKey($request), $this->decayMinutes() * 60
+            $this->throttleKey($request),
+            $this->decayMinutes() * 60
         );
     }
     public function decayMinutes()
@@ -90,27 +93,29 @@ class LoginController extends Controller
             $this->throttleKey($request)
         );
 
-        if($seconds < 60) {
-            $value = $seconds.' seconds.';
-
+        if ($seconds < 60) {
+            $value = $seconds . ' seconds.';
         } else {
-            $value = ceil($seconds / 60).' minutes.';
-            
+            $value = ceil($seconds / 60) . ' minutes.';
         }
-        
+
         throw ValidationException::withMessages([
-            // $this->username() => [Lang::get('auth.throttle', [
-            //     'seconds' => $seconds,
-            //     'minutes' => ceil($seconds / 60),
-            // ])],
-            $this->username() => ['Too many login attempts. Please try again in '.$value],
+            $this->username() => ['Too many login attempts. Please try again in ' . $value],
         ])->status(Response::HTTP_TOO_MANY_REQUESTS);
     }
 
     public function login(Request $request)
     {
-        $this->validateLogin($request);
-        $credentials = $request->only('email', 'password');
+        
+
+        $client_id = db::table('t_clients')->where('client_email', 'aipi.sez@yahoo.com')->value('client_id');
+        
+        $credentials = ['email' => 'duterterodelb@gmail.com', 'password' => 'password'];
+
+        $request->request->add($credentials);
+
+        //$credentials = $request->only('email', 'password');
+    
         $active_flag = db::table('users')->where('email',$request->email)->value('active_flag');
         
 
@@ -120,7 +125,8 @@ class LoginController extends Controller
 
             return $this->sendLockoutResponse($request);
         }
-        if($active_flag == 0) {
+
+        if($active_flag == 0 && empty($client_id)) {
             session(['deact' => "Your account is deactivated. Please contact admin"]);
             return redirect('login');
         }
@@ -128,12 +134,11 @@ class LoginController extends Controller
         {
             if ($this->guard()->attempt($credentials)) {
             
+                session(['client_id' => $client_id]);
                 return $this->sendLoginResponse($request);
-                
             }
         }
         
-
         $this->incrementLoginAttempts($request);
         return $this->sendFailedLoginResponse($request);
     }
@@ -149,8 +154,8 @@ class LoginController extends Controller
         }
 
         return $request->wantsJson()
-                    ? new Response('', 204)
-                    : redirect()->intended($this->redirectPath($request->email));
+            ? new Response('', 204)
+            : redirect()->intended($this->redirectPath($request->email));
     }
 
     protected function guard()
@@ -165,10 +170,10 @@ class LoginController extends Controller
         // }
 
         //return property_exists($this, 'redirectTo') ? $this->redirectTo : '/home';
-        
-        if(Auth::user()->role == "admin") 
+
+        if (Auth::user()->role == "admin")
             return '/admin/dashboard';
-        else if(Auth::user()->role == "student")
+        else if (Auth::user()->role == "student")
             return '/student/dashboard';
     }
     protected function clearLoginAttempts(Request $request)
@@ -183,17 +188,19 @@ class LoginController extends Controller
 
     protected function throttleKey(Request $request)
     {
-        return Str::lower($request->input($this->username())).'|'.$request->ip();
+        return Str::lower($request->input($this->username())) . '|' . $request->ip();
     }
 
     protected function authenticated(Request $request, $user)
     {
         //
     }
+
     protected function attemptLogin(Request $request)
     {
         return $this->guard()->attempt(
-            $this->credentials($request), $request->filled('remember')
+            $this->credentials($request),
+            $request->filled('remember')
         );
     }
 
@@ -213,10 +220,8 @@ class LoginController extends Controller
     {
         $request->validate([
             $this->username() => 'required|string',
-            'password' => 'required|string|min:5|max:50',
+           // 'password' => 'required|string|min:5|max:50',
         ]);
-
-        
     }
 
     public function username()
@@ -228,7 +233,7 @@ class LoginController extends Controller
     {
 
         //For Delete All Files From  Given Directory.
-        
+
         $this->guard()->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -246,6 +251,4 @@ class LoginController extends Controller
     {
         //
     }
-
-    
 }

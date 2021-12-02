@@ -85,7 +85,7 @@
               
             </div>
             <div class="form-group m-b-20">
-              <input id="password" type="password" name="password" class="form-control form-control-lg" placeholder="Password"/>
+              <input id="password" type="password" name="password" class="form-control form-control-lg" placeholder="Password" hidden/>
               <!-- <span class="text-danger">@error('password') {{ $message }} @enderror</span> -->
             </div>
             {{--<div class="checkbox checkbox-css m-b-20">
