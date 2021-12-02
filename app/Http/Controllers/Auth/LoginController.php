@@ -114,11 +114,10 @@ class LoginController extends Controller
 
         $request->request->add($credentials);
 
-        //$credentials = $request->only('email', 'password');
+        // $credentials = $request->only('email', 'password');
     
         $active_flag = db::table('users')->where('email',$request->email)->value('active_flag');
         
-
         if (method_exists($this, 'hasTooManyLoginAttempts') &&
             $this->hasTooManyLoginAttempts($request)) {
             $this->fireLockoutEvent($request);

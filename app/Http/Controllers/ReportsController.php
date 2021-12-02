@@ -8,34 +8,48 @@ use PDF;
 
 class ReportsController extends Controller
 {
+    public function get_schedules()
+    {
+        
+        return db::table('v_get_schedules')->whereIn('RLI_LOCATIONAME',$this->locationName())->get();
+    }
 
     public function view_reports()
     {
-        $guards = db::table('v_get_schedules')->get();
+        $guards = $this->get_schedules();
         return view('employee.reports',compact('guards'));
     }
 
     public function incident_reports()
     {
-        $guards = db::table('v_get_schedules')->get();
+        $guards = $this->get_schedules();
         return view('employee.incident_reports',compact('guards'));
     }
 
     public function emergency_reports()
     {
-        $guards = db::table('v_get_schedules')->get();
+        $guards = $this->get_schedules();
         return view('employee.emergency_reports',compact('guards'));
     }
 
     public function performance_reports()
     {
-        $guards = db::table('v_get_schedules')->get();
+        $guards = $this->get_schedules();
         return view('employee.performance_reports',compact('guards'));   
     }
 
     public function locationName()
     {
-        return db::table('r_location_information')->where('CLIENT_ID',session('client_id'))->value('RLI_LOCATIONAME');
+        $locations = db::table('r_location_information')
+        ->where('CLIENT_ID',session('client_id'))
+        ->get(['RLI_LOCATIONAME']);
+        
+        $data = [];
+        for($i=0, $len = count($locations); $i<$len; $i++) {
+            array_push($data, $locations[$i]->RLI_LOCATIONAME);
+        }
+
+        return $data;
     }
 
     public function print_emergency(Request $request)
@@ -60,14 +74,14 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_emergency')->where('REL_USERID',$guard_id)
                 ->where(DB::raw('DATE(REL_DATEADDED)'), $start)
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             } 
             else 
             {
                 $logs = db::table('v_get_emergency')->where('REL_USERID',$guard_id)
                 ->whereBetween(DB::raw('DATE(REL_DATEADDED)'), array($start, $end))
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }
@@ -100,14 +114,14 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_incidents')->where('RIL_USERID',$guard_id)
                 ->where(DB::raw('DATE(RIL_DATEADDED)'), $start)
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             } 
             else 
             {
                 $logs = db::table('v_get_incidents')->where('RIL_USERID',$guard_id)
                 ->whereBetween(DB::raw('DATE(RIL_DATEADDED)'), array($start, $end))
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }
@@ -142,14 +156,14 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_logs')->where('TAL_ACCOUNTID',$guard_id)
                 ->where(DB::raw('DATE(TAL_DATEADDED)'), $start)
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             } 
             else 
             {
                 $logs = db::table('v_get_logs')->where('TAL_ACCOUNTID',$guard_id)
                 ->whereBetween('TAL_DATEADDED', array($start, $end))
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }
@@ -185,7 +199,7 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_swim_logs')->where('RSL_GUARDID',$guard_id)
                 ->where(DB::raw('DATE(RSL_DATEADDED)'), $start)
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
                 
             } 
@@ -193,7 +207,7 @@ class ReportsController extends Controller
             {
                 $logs = db::table('v_get_swim_logs')->where('RSL_GUARDID',$guard_id)
                 ->whereBetween('RSL_DATEADDED', array($start, $end))
-                ->where('RLI_LOCATIONAME',$this->locationName())
+                ->whereIn('RLI_LOCATIONAME',$this->locationName())
                 ->get();
             }
         }
