@@ -134,6 +134,8 @@ class LoginController extends Controller
             if ($this->guard()->attempt($credentials)) {
             
                 session(['client_id' => $client_id]);
+                session(['client_email' => $current_email]);
+                
                 return $this->sendLoginResponse($request);
             }
         }
